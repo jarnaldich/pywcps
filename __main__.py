@@ -1,9 +1,82 @@
-from pywcps import *
+import requests
+from dsl import *
+
 #--------------------------------------------------------------------------------
 #                                  QUERIES
 #--------------------------------------------------------------------------------
+@wcps
+def q_count():
+    with Coverages(c="COV1") as c:
+        return encode(count(c), "csv")
 
-def query():
-    """ The decorator walks the AST and emits a WCPS query. """
-    for (c,d) in coverages(c="COV1", d="COV2"):
-        return encode(count(d[ansi("1979-05-01T00:00:00","1979-05-31T18:00:00")]) < 0.201, "csv")
+@wcps
+def q_member():
+    with Coverages(c="COV1") as c:
+        return encode(count(c.rgb), "csv")
+
+@wcps
+def q_op2():
+    with Coverages(c="COV1") as c:
+        return encode(count(c.rgb < 0.5), "csv")
+
+@wcps
+def q_latlon():
+    with Coverages(c="COV1") as c:
+        return encode(count(c[lon(0,10), lat(45,55), ansi("2010-01-31T23:59:00")] < 0.5), "csv")
+
+
+@wcps
+def q_cloro1():
+    with Coverages(c="CCI_V2_monthly_chlor_a_rmsd") as c:
+        return encode(cast('float',
+                           count(c[ansi("2010-01-31T23:59:00")] < 0.201)),
+                      "csv")
+
+@wcps
+def q_clorophyl():
+    with Coverages(c="CCI_V2_release_chlor_a",
+                   d="CCI_V2_monthly_chlor_a_rmsd") as (c,d):
+        return \
+            encode(cast('float',
+                        avg(c[axis('Long',0,10), axis('Lat', 45,55), axis('ansi', '2010-01-31T23:59:00')] *
+                           (d[axis('Long',0,10), axis('Lat', 45,55), axis('ansi', '2010-01-31T23:59:00')] < 0.45))),
+                   "csv")
+
+@wcps
+def q_colortable():
+    with Coverages(a="CCI_V2_monthly_chlor_a") as a:
+        myslice = a[axis('Lat', 30,70), axis('Long', -30,10), axis('ansi', "2009-09-30T23:59:00Z")]
+        return \
+            encode(
+                switch(
+                    case(myslice < 0.05, struct(red= 255, green= 255, blue= 255, alpha=   0)),
+                    case(myslice <  0.1, struct(red=   0, green= 255, blue= 255, alpha= 255)),
+                    case(myslice <  0.2, struct(red=   0, green= 128, blue= 255, alpha= 255)),
+                    case(myslice <  0.5, struct(red=   0, green=   0, blue= 255, alpha= 255)),
+                    case(myslice <  1.5, struct(red= 218, green=   0, blue= 255, alpha= 255)),
+                    case(myslice <  3.0, struct(red= 255, green=   0, blue= 255, alpha= 255)),
+                    case(myslice <  4.5, struct(red= 255, green= 164, blue=   0, alpha= 255)),
+                    case(myslice <  6.2, struct(red= 255, green= 250, blue=   0, alpha= 255)),
+                    case(myslice <   20, struct(red= 255, green=   0, blue=   0, alpha= 255)),
+                    default(             struct(red= 255, green= 255, blue= 255, alpha=   0))), "png")
+
+def print_them():
+    print "\n".join([eval(x+"()")
+                 for x in dir()
+                 if x.startswith("q_")])
+def getEOText(q):
+    resp = requests.post('http://earthserver.pml.ac.uk/rasdaman/ows/wcps',
+                         data={ 'query': q() })
+    return resp.text
+
+def saveEOImage(q):
+    resp = requests.post('http://earthserver.pml.ac.uk/rasdaman/ows/wcps',
+                         data={ 'query': q() })
+    with open('image.png','wb') as f:
+        f.write(resp.content)
+
+#print postEO(q_cloro1)
+#print postEO(q_clorophyl)
+saveEOImage(q_colortable)
+
+print q_colortable()
