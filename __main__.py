@@ -80,3 +80,18 @@ def saveEOImage(q):
 saveEOImage(q_colortable)
 
 print q_colortable()
+"""
+for $c in ( M1, M2, M3 )
+where
+    some( $c.nir > 127 )
+return
+    encode( abs( $c.red - $c.nir ), "hdf5" )
+"""
+
+"""
+with coverage_exp('histogram',  # There will also be coverage_const 
+                   px=axis('x', lo, hi),
+                   py=axis('y', lo, hi),
+                   ansi=axis('ansi', lo, hi)) as (px, py, ansi):
+    # values(?) --> maybe not needed
+"""

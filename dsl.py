@@ -299,6 +299,7 @@ def ast2dict(root_expr):
 
 class Coverages(object):
     def __init__(self, **kwargs):
+        """TODO: Maybe the where clause should be here, too"""
         self.coverages = kwargs
 
     def __enter__(self):
