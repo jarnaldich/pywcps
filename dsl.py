@@ -302,6 +302,7 @@ class cov_iter(object):
     Equivalent of a for (v1 in (L1))... return ...
     """
     def __init__(self, **kwargs):
+        """TODO: Maybe the where clause should be here, too"""
         self.coverages = kwargs
 
     def __enter__(self):
