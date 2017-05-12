@@ -2,122 +2,107 @@
 import ast
 import astor
 import inspect
+from collections import namedtuple
+from dsl import *
+from ast_rewrite import wcps
 
-class For():
-    """
-    """
-    def __init__(self, **covs):
-        self.covs = covs
-        env = inspect.currentframe().f_back.f_locals
-        print env
-        for k,v in self.covs.iteritems():
-            env[k] = v
+@wcps
+def test_simple(): return For(c="C")[encode(c, "csv")]
 
-    def __getitem__(self, *subexpr):
-        a = ""
-        return "HOOOOL"
+@wcps
+def test_2cov(): return For(c="C", d="V")[encode(c*d, "csv")]
 
-def subexp(*args):
-    print "HOOOLA"
-    f_parent = inspect.currentframe().f_back.f_locals
+@wcps
+def test_count(): return For(c="C")[encode(count(c), "csv")]
 
-def wcps(fun):
-    src = "\n".join(inspect.getsourcelines(fun)[0][1:])
-    fun_ast = ast.parse(src)
-    
-    ast.fix_missing_locations(fun_ast) # Fix line numbers
-    print astor.dump(fun_ast)
-    print astor.to_source(fun_ast)
+@wcps
+def test_op2(): return For(c="C")[encode(count(c.rgb < 0.5), "csv")]
 
-    prefix = 'For_'
-    r = Rewrite(prefix)
-    for i in range(10):
-        fun_ast = r.visit(fun_ast)
-        ast.fix_missing_locations(fun_ast) # Fix line numbers
-        print r.cnt
-        if r.cnt == 0:
-            break
-        prefix = '%s%d_' % (prefix, r.cnt)
-        r = Rewrite(prefix)
+@wcps
+def test_latlon():
+    return For(c="COV1")[
+            encode(count(c[axis('Long', 0, 10),
+                           axis('Lat', 45,55),
+                           axis('ansi',"2010-01-31T23:59:00")] < 0.5), "csv")
+    ]
 
-#    out_fun = r.visit(fun_ast)
-    print astor.to_source(fun_ast)
-    code_obj = compile(fun_ast, filename='<ast>', mode='exec')
-    def subs(*args, **kwargs):
-        return code_obj
-    return subs
+@wcps
+def test_cloro():
+    return For(c="CCI_V2_monthly_chlor_a_rmsd")[
+         encode(cast('float',
+                    count(c[ansi("2010-01-31T23:59:00")] < 0.201)),
+               "csv")]
 
+@wcps
+def test_cloro2():
+    return For(c="CCI_V2_release_chlor_a",
+               d="CCI_V2_monthly_chlor_a_rmsd")[
+                   encode(
+          cast('float',
+             avg(c[axis('Long',0,10),
+                   axis('Lat', 45,55),
+                   axis('ansi', '2010-01-31T23:59:00')] *
+                 (d[axis('Long',0,10),
+                    axis('Lat', 45,55),
+                    axis('ansi', '2010-01-31T23:59:00')] < 0.45))
+        ), "csv")]
 
+@wcps
+def test_colortable():
+
+    def myslice(cov):
+        return  cov[axis('Lat', 30,70),
+                  axis('Long', -30,10),
+                  axis('ansi', "2009-09-30T23:59:00Z")]
+
+    def rgba(r,g,b,a):
+        return struct(red=r, green=g, blue=b, alpha=a)
+
+    return For(a="CCI_V2_monthly_chlor_a")[
+            encode(
+                switch(
+                    case(myslice(a) < 0.05, rgba(255, 255, 255,   0)),
+                    case(myslice(a) <  0.1, rgba(  0, 255, 255, 255)),
+                    case(myslice(a) <  0.2, rgba(  0, 128, 255, 255)),
+                    case(myslice(a) <  0.5, rgba(  0,   0, 255, 255)),
+                    case(myslice(a) <  1.5, rgba(218,   0, 255, 255)),
+                    case(myslice(a) <  3.0, rgba(255,   0, 255, 255)),
+                    case(myslice(a) <  4.5, rgba(255, 164,   0, 255)),
+                    case(myslice(a) <  6.2, rgba(255, 250,   0, 255)),
+                    case(myslice(a) <   20, rgba(255,   0,   0, 255)),
+                    default(rgba(255, 255, 255,  0))), "png")]
+
+@wcps
 def test2():
-    For(c="C1")[
+    l = 100000
+    def my_slice(cov, time):
+        return cov[axis('Long', -50,40),
+                   axis('Lat', 45,55),
+                   axis('ansi', time * 1, crs="CRS:1")]
+    return For(c="CCI_V2_release_daily_chlor_a")[
             encode(New('histogram',
                        px=axis('x', 0, 0),
                        py=axis('y', 0, 0),
                        pt=axis('t', 0, 360))[
-                           add(c[Long[-50:40], Lat[45:55], ansi[pt]])
-                       ], "csv"),
-    ]
+                           add((my_slice(c, pt  ) < l) * my_slice(c,pt)) / count(my_slice(c, pt  ) < l) + \
+                           add((my_slice(c, pt+1) < l) * my_slice(c,pt)) / count(my_slice(c, pt+1) < l) + \
+                           add((my_slice(c, pt+2) < l) * my_slice(c,pt)) / count(my_slice(c, pt+2) < l)
+                       ], "csv")]
 
-class Rewrite(ast.NodeTransformer):
-    pass
+# def emit_fun(f):
+#     (fname, code, src, ast, in_ast) = f()
+#     exec (code) in globals(), locals()
+#     return locals()[fname]().emit()
 
-def matches_scope(e, name):
-    return (isinstance(e.value, ast.Subscript) and 
-            isinstance(e.value.value, ast.Call) and
-            e.value.value.func.id == name)
+# for f in dir():
+#     if f.startswith('test_'):
+#         print emit_fun(locals()[f])
 
-class Rewrite(ast.NodeTransformer):
-
-    def __init__(self, prefix):
-        self.scopes = [] 
-        self.prefix = prefix
-        self.cnt = 0
-
-    def visit_FunctionDef(self, fd):
-        self.scopes.append([])
-        self.generic_visit(fd)
-        fd.body = self.scopes.pop() + fd.body
-        return fd
-
-    def visit_Expr(self, e):
-        if matches_scope(e, 'For'):
-            if isinstance(e.value.slice.value, ast.Tuple):
-                seq = e.value.slice.value.elts
-            else:
-                print type(e.value.slice.value)
-                seq = [e.value.slice.value] 
-
-            funcargs = [ ast.Name(id=a.arg, ctx=ast.Load()) for a in e.value.value.keywords ]
-            funvals =  [ a.value for a in e.value.value.keywords ]
-            funname = "%s%d" % (self.prefix, self.cnt)
-            innerBody = ast.Expr(value=ast.List(elts=seq, ctx=ast.Load()))
-            self.scopes[-1].append(ast.FunctionDef(
-                    name=funname, #ast.Name(id="auto", ctx=ast.Load()),
-                    args=ast.arguments(args=funcargs, vararg=None, kwarg=None, defaults=[]),
-                    body = [ast.Expr(value=s) for s in seq],
-                    decorator_list=[]))
-
-            self.cnt += 1
-
-            return ast.Expr(value=ast.Call(func=ast.Name(id=funname, ctx=ast.Load()),
-                    keywords=[],
-                    starargs=None,
-                    kwargs=None,
-                    args=funvals))
-
-        return e
-
-@wcps
-def test():
-    return "hola"
-    For(a="A")[
-        subexp()
-    ]
-    For(c="C1")[
-            encode(c, "csv"),
-            For(d="C2")[
-                subexp(), subexp()
-            ]
-    ]
-
-#exec (test()) in globals(), locals()
+# (fname, code, src, ast, in_ast) = test2()
+# with open('debug.py', 'w') as f:
+#     print >>f, src
+from wcps_client import WCPSClient
+eo = WCPSClient('http://earthserver.pml.ac.uk/rasdaman/ows/wcps')
+print eo.get_str(test_cloro)
+print eo.get_str(test_cloro2)
+eo.save_to(test_colortable, 'test.png')

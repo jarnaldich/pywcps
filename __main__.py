@@ -122,7 +122,7 @@ return
 """
 
 """
-with coverage_exp('histogram',  # There will also be coverage_const 
+with coverage_exp('histogram',  # There will also be coverage_const
                    px=axis('x', lo, hi),
                    py=axis('y', lo, hi),
                    ansi=axis('ansi', lo, hi)) as (px, py, ansi):
