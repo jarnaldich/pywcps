@@ -297,7 +297,10 @@ def ast2dict(root_expr):
             acum[name] = val
     return acum
 
-class Coverages(object):
+class cov_iter(object):
+    """
+    Equivalent of a for (v1 in (L1))... return ...
+    """
     def __init__(self, **kwargs):
         self.coverages = kwargs
 
@@ -313,6 +316,25 @@ class Coverages(object):
         if extype is None:
             _push(EnvironmentExpr(self.coverages, _pop()))
 
+class new_cov(object):
+    def __init__(self, **kwargs):
+        """TODO: Maybe check that iterators are subclasses of range"""
+        self.iterators = kwargs
+
+    def __enter__(self):
+        lst = [CoverageExpr(k,v)
+               for k,v in self.coverages.iteritems()]
+        if len(lst) > 1:
+            return tuple(lst)
+        else:
+            return lst[0]
+
+    def __exit__(self, extype, exval, traceback):
+        if extype is None:
+            _push(EnvironmentExpr(self.coverages, _pop()))
+
+
+
 _ENVIRONMENTS=[]
 
 def printE():
@@ -327,5 +349,3 @@ def wcps(fun):
         return obj.emit()
 
     return wrapped
-
-

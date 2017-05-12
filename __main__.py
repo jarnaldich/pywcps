@@ -6,35 +6,35 @@ from dsl import *
 #--------------------------------------------------------------------------------
 @wcps
 def q_count():
-    with Coverages(c="COV1") as c:
+    with cov_iter(c="COV1") as c:
         return encode(count(c), "csv")
 
 @wcps
 def q_member():
-    with Coverages(c="COV1") as c:
+    with cov_iter(c="COV1") as c:
         return encode(count(c.rgb), "csv")
 
 @wcps
 def q_op2():
-    with Coverages(c="COV1") as c:
+    with cov_iter(c="COV1") as c:
         return encode(count(c.rgb < 0.5), "csv")
 
 @wcps
 def q_latlon():
-    with Coverages(c="COV1") as c:
+    with cov_iter(c="COV1") as c:
         return encode(count(c[lon(0,10), lat(45,55), ansi("2010-01-31T23:59:00")] < 0.5), "csv")
 
 
 @wcps
 def q_cloro1():
-    with Coverages(c="CCI_V2_monthly_chlor_a_rmsd") as c:
+    with cov_iter(c="CCI_V2_monthly_chlor_a_rmsd") as c:
         return encode(cast('float',
                            count(c[ansi("2010-01-31T23:59:00")] < 0.201)),
                       "csv")
 
 @wcps
 def q_clorophyl():
-    with Coverages(c="CCI_V2_release_chlor_a",
+    with cov_iter(c="CCI_V2_release_chlor_a",
                    d="CCI_V2_monthly_chlor_a_rmsd") as (c,d):
         return \
             encode(cast('float',
@@ -44,7 +44,7 @@ def q_clorophyl():
 
 @wcps
 def q_colortable():
-    with Coverages(a="CCI_V2_monthly_chlor_a") as a:
+    with cov_iter(a="CCI_V2_monthly_chlor_a") as a:
         myslice = a[axis('Lat', 30,70), axis('Long', -30,10), axis('ansi', "2009-09-30T23:59:00Z")]
         return \
             encode(
@@ -75,8 +75,42 @@ def saveEOImage(q):
     with open('image.png','wb') as f:
         f.write(resp.content)
 
+@wcps
+def q_createCOV():
+    """
+    for c in (CCI_V2_release_daily_chlor_a) return
+    encode((float)
+      coverage histogram over
+$px x( 0 : 0 ),
+$py y( 0 : 0 ),
+$pt ansi( 0 : 361 ) 
+values  (
+add( (c[Long(-50:-40), Lat(45:55),ansi:"CRS:1"($pt)] < 100000 ) * c[Long(-50:-40), Lat(45:55),ansi:"CRS:1"($pt)]) 
+/ 
+count(c[Long(-50:-40), Lat(45:55),ansi:"CRS:1"($pt)] < 100000 ) +
+add( (c[Long(-50:-40), Lat(45:55),ansi:"CRS:1"($pt + 1)] < 100000 ) * c[Long(-50:-40), Lat(45:55),ansi:"CRS:1"($pt + 1)]) 
+/ 
+count(c[Long(-50:-40), Lat(45:55),ansi:"CRS:1"($pt + 1)] < 100000 ) +
+add( (c[Long(-50:-40), Lat(45:55),ansi:"CRS:1"($pt + 2)] < 100000 ) * c[Long(-50:-40), Lat(45:55),ansi:"CRS:1"($pt + 2)]) 
+/
+count(c[Long(-50:-40), Lat(45:55),ansi:"CRS:1"($pt + 2)] < 100000 ) 
+)
+, "csv")
+    """
+    cov_iter(c='CCI_V2_release_daily_chlor_a')[
+        
+    ]
+    with cov_iter(c='CCI_V2_release_daily_chlor_a') as c:
+        return \
+            encode(cast('float',
+                        new_cov('histogram', px=axis('x', 0,0), py=axis('y', 0,0), pt=axis('z', 0,0))
+            ))
+
+
+
 #print postEO(q_cloro1)
 #print postEO(q_clorophyl)
 saveEOImage(q_colortable)
 
 print q_colortable()
+
