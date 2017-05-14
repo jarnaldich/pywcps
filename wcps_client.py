@@ -4,10 +4,10 @@ import requests
 from ast_nodes import *
 from dsl import *
 
-def emit_fun(f):
+def emit_fun(f, *args, **kwargs):
     (fname, code, src, ast, in_ast) = f()
     exec (code) in globals(), locals()
-    return locals()[fname]().emit()
+    return locals()[fname](*args, **kwargs).emit()
 
 class WCPSClient(object):
 
@@ -17,12 +17,16 @@ class WCPSClient(object):
     def _req(self, wcps_str):
         return requests.post(self.url, data={'query': wcps_str})
 
-    def get_str(self, q):
-        return self._req(emit_fun(q)).text
+    def get_str(self, q, *args, **kwargs):
+        return self._req(emit_fun(q, *args, **kwargs)).text
 
-    def save_to(self, q, fname):
+    def save_to(self, q, fname, *args, **kwargs):
         with open(fname,'wb') as f:
-            f.write(self._req(emit_fun(q)).content)
+            f.write(self._req(emit_fun(q, *args, **kwargs)).content)
+
+    def ipython_image(self, q, *args, **kwargs):
+        from IPython.display import Image
+        return Image(self._req(emit_fun(q, *args, **kwargs)).content)
 
 if __name__ == "__main__":
     eo = WCPSClient('http://earthserver.pml.ac.uk/rasdaman/ows/wcps')

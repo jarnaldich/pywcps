@@ -50,10 +50,10 @@ def test_cloro2():
 @wcps
 def test_colortable():
 
-    def myslice(cov):
+    def less_than(cov, x):
         return  cov[axis('Lat', 30,70),
                   axis('Long', -30,10),
-                  axis('ansi', "2009-09-30T23:59:00Z")]
+                  axis('ansi', "2009-09-30T23:59:00Z")] < x
 
     def rgba(r,g,b,a):
         return struct(red=r, green=g, blue=b, alpha=a)
@@ -61,15 +61,15 @@ def test_colortable():
     return For(a="CCI_V2_monthly_chlor_a")[
             encode(
                 switch(
-                    case(myslice(a) < 0.05, rgba(255, 255, 255,   0)),
-                    case(myslice(a) <  0.1, rgba(  0, 255, 255, 255)),
-                    case(myslice(a) <  0.2, rgba(  0, 128, 255, 255)),
-                    case(myslice(a) <  0.5, rgba(  0,   0, 255, 255)),
-                    case(myslice(a) <  1.5, rgba(218,   0, 255, 255)),
-                    case(myslice(a) <  3.0, rgba(255,   0, 255, 255)),
-                    case(myslice(a) <  4.5, rgba(255, 164,   0, 255)),
-                    case(myslice(a) <  6.2, rgba(255, 250,   0, 255)),
-                    case(myslice(a) <   20, rgba(255,   0,   0, 255)),
+                    case(less_than(a, 0.05), rgba(255, 255, 255,   0)),
+                    case(less_than(a,  0.1), rgba(  0, 255, 255, 255)),
+                    case(less_than(a,  0.2), rgba(  0, 128, 255, 255)),
+                    case(less_than(a,  0.5), rgba(  0,   0, 255, 255)),
+                    case(less_than(a,  1.5), rgba(218,   0, 255, 255)),
+                    case(less_than(a,  3.0), rgba(255,   0, 255, 255)),
+                    case(less_than(a,  4.5), rgba(255, 164,   0, 255)),
+                    case(less_than(a,  6.2), rgba(255, 250,   0, 255)),
+                    case(less_than(a,   20), rgba(255,   0,   0, 255)),
                     default(rgba(255, 255, 255,  0))), "png")]
 
 @wcps
@@ -84,9 +84,9 @@ def test2():
                        px=axis('x', 0, 0),
                        py=axis('y', 0, 0),
                        pt=axis('t', 0, 360))[
-                           add((my_slice(c, pt  ) < l) * my_slice(c,pt)) / count(my_slice(c, pt  ) < l) + \
-                           add((my_slice(c, pt+1) < l) * my_slice(c,pt)) / count(my_slice(c, pt+1) < l) + \
-                           add((my_slice(c, pt+2) < l) * my_slice(c,pt)) / count(my_slice(c, pt+2) < l)
+                           add((my_slice(c, pt  , l) * my_slice(c,pt)) / count(my_slice(c, pt  , l) + \
+                           add((my_slice(c, pt+1, l) * my_slice(c,pt)) / count(my_slice(c, pt+1, l) + \
+                           add((my_slice(c, pt+2, l) * my_slice(c,pt)) / count(my_slice(c, pt+2, l)
                        ], "csv")]
 
 # def emit_fun(f):
