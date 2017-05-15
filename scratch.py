@@ -73,21 +73,26 @@ def test_colortable():
                     default(rgba(255, 255, 255,  0))), "png")]
 
 @wcps
-def test2():
+def test_coverage_constructor():
     l = 100000
-    def my_slice(cov, time):
-        return cov[axis('Long', -50,40),
+    def roi(cov, time):
+        return cov[axis('Long', -50, -40),
                    axis('Lat', 45,55),
-                   axis('ansi', time * 1, crs="CRS:1")]
+                   axis('ansi', time, crs="CRS:1")]
+
+    def term(cov, time):
+        return (add((roi(cov, time) < l) * roi(cov, time))
+                /
+                count(roi(cov, time) < l))
+
     return For(c="CCI_V2_release_daily_chlor_a")[
-            encode(New('histogram',
-                       px=axis('x', 0, 0),
-                       py=axis('y', 0, 0),
-                       pt=axis('t', 0, 360))[
-                           add((my_slice(c, pt  , l) * my_slice(c,pt)) / count(my_slice(c, pt  , l) + \
-                           add((my_slice(c, pt+1, l) * my_slice(c,pt)) / count(my_slice(c, pt+1, l) + \
-                           add((my_slice(c, pt+2, l) * my_slice(c,pt)) / count(my_slice(c, pt+2, l)
-                       ], "csv")]
+            encode(cast('float',
+                        New('histogram',
+                            px=axis('x', 0, 0),
+                            py=axis('y', 0, 0),
+                            pt=axis('t', 0, 360))[
+                                term(c, pt) #+ term(c, pt+1) + term(c, pt+2)
+                            ]), "csv")]
 
 # def emit_fun(f):
 #     (fname, code, src, ast, in_ast) = f()
@@ -101,8 +106,10 @@ def test2():
 # (fname, code, src, ast, in_ast) = test2()
 # with open('debug.py', 'w') as f:
 #     print >>f, src
-from wcps_client import WCPSClient
+from wcps_client import WCPSClient, emit_fun
 eo = WCPSClient('http://earthserver.pml.ac.uk/rasdaman/ows/wcps')
 print eo.get_str(test_cloro)
 print eo.get_str(test_cloro2)
-eo.save_to(test_colortable, 'test.png')
+print eo.get_str(test_coverage_constructor)
+print emit_fun(test_coverage_constructor)
+#eo.save_to(test_coverage_constructor, 'test.png')

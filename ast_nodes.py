@@ -23,14 +23,29 @@ class Expr(object):
         else:
             return BinOpExpr(op, self, LiteralExpr(other))
 
-    def __lt__(self, other):
-        return self._binop(other, '<')
-    def __mul__(self, other):
-        return self._binop(other, '*')
-    def __add__(self, other):
-        return self._binop(other, '+')
-    def __div__(self, other):
-        return self._binop(other, '/')
+    def __lt__(self, other): return self._binop(other, '<')
+    def __gt__(self, other): return self._binop(other, '>')
+    def __le__(self, other): return self._binop(other, '<=')
+    def __ge__(self, other): return self._binop(other, '>=')
+    def __ne__(self, other): return self._binop(other, '!=')
+    def __eq__(self, other): return self._binop(other, '=')
+
+    def __mul__(self, other): return self._binop(other, '*')
+    def __add__(self, other): return self._binop(other, '+')
+    def __sub__(self, other): return self._binop(other, '-')
+    def __div__(self, other): return self._binop(other, '/')
+    def __and__(self, other): return self._binop(other, 'and')
+    def __or__(self, other) : return self._binop(other, 'or')
+    def __xor__(self, other): return self._binop(other, 'xor')
+
+    def __rmul__(self, other): return self._binop(other, '*')
+    def __radd__(self, other): return self._binop(other, '+')
+    def __rsub__(self, other): return self._binop(other, '-')
+    def __rdiv__(self, other): return self._binop(other, '/')
+    def __rand__(self, other): return self._binop(other, 'and')
+    def __ror__(self, other) : return self._binop(other, 'or')
+    def __rxor__(self, other): return self._binop(other, 'xor')
+
 
 class LiteralExpr(Expr):
     """ Literals """
@@ -70,9 +85,10 @@ class NewExpr(Expr):
         self.child = child
 
     def emit(self):
-        fors = ['$%s in (%s:%s)' % (k, v.args[0], v.args[1])
+        fors = ['$%s %s' % (k, v.emit())
                 for k,v in self.covs.iteritems()]
-        return "for " + ", ".join(fors) + " values ( " + self.child.emit() + " )"
+        return ("coverage %s over " % (self.name)) + \
+            ", ".join(fors) + " values ( " + self.child.emit() + " )"
 
 class BinOpExpr(Expr):
     """ Binary Operators """

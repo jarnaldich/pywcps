@@ -3,9 +3,19 @@ from __future__ import absolute_import
 from pprint import pprint
 from ast_nodes import *
 
-def count(child): return ApplyExpr("count", child)
-def avg(child): return ApplyExpr("avg", child)
-def add(child): return ApplyExpr("add", child)
+def count(child):  return ApplyExpr("count",  child)
+def avg(child):    return ApplyExpr("avg",    child)
+def add(child):    return ApplyExpr("add",    child)
+def arcsin(child): return ApplyExpr("arcsin", child)
+def arccos(child): return ApplyExpr("arccos", child)
+def pow(child):    return ApplyExpr("pow",    child)
+def re(child):     return ApplyExpr("re",     child)
+def im(child):     return ApplyExpr("im",     child)
+def cos(child):    return ApplyExpr("cos",    child)
+def sin(child):    return ApplyExpr("sin",    child)
+def cosh(child):   return ApplyExpr("cosh",   child)
+def sinh(child):   return ApplyExpr("sinh",   child)
+
 def cast(totype, child):
     return CastExpr(totype, child)
 
@@ -13,7 +23,7 @@ def quote_str(maybe_str):
     if isinstance(maybe_str, Expr):
         return maybe_str.emit()
     elif isinstance(maybe_str, str) and not maybe_str[0]=='$':
-        return '"%s"'%(maybe_str,) 
+        return '"%s"'%(maybe_str,)
     else:
         return str(maybe_str)
 
