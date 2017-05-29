@@ -24,9 +24,10 @@ class WCPSClient(object):
         with open(fname,'wb') as f:
             f.write(self._req(emit_fun(q, *args, **kwargs)).content)
 
-    def ipython_image(self, q, *args, **kwargs):
+    def ipython_image(self, q, ipython_kw = {}, *args, **kwargs):
         from IPython.display import Image
-        return Image(self._req(emit_fun(q, *args, **kwargs)).content)
+	ipython_kw['data'] = self._req(emit_fun(q, *args, **kwargs)).content
+        return Image(**ipython_kw)
 
 if __name__ == "__main__":
     eo = WCPSClient('http://earthserver.pml.ac.uk/rasdaman/ows/wcps')
