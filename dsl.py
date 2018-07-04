@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 from pprint import pprint
-from ast_nodes import *
+from .ast_nodes import *
 
 def count(child): return ApplyExpr("count", child)
 def avg(child): return ApplyExpr("avg", child)
@@ -57,7 +57,6 @@ def struct(**kwargs):
 
 def printE():
     global _ENVIRONMENTS
-    print _ENVIRONMENTS
 
 def wcps(fun):
     def wrapped():

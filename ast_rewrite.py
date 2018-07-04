@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 import ast
-import astor
+import astunparse
 import inspect
-from dsl import *
+from .dsl import *
 from collections import namedtuple
 
 SrcTransform = namedtuple('SrcTransform', ['fname', 'code_obj', 'code_src', 'ast', 'in_ast'])
@@ -21,8 +21,8 @@ def wcps(fun):
         prefix = '%s%d_' % (prefix, r.cnt)
         r = Rewrite(prefix)
 
-    out_src = astor.to_source(fun_ast)
-    code_obj = compile(fun_ast, filename='<ast>', mode='exec')
+    out_src = astunparse.dump(fun_ast)
+    code_obj = compile(fun_ast, '<ast>', 'exec')
 
     def subs(*args, **kwargs):
         return SrcTransform(fun_ast.body[0].name, code_obj, out_src, fun_ast, (src))

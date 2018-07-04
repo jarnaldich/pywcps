@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import requests
-from ast_nodes import *
-from dsl import *
+from .ast_nodes import *
+from .dsl import *
 
 def emit_fun(f, *args, **kwargs):
     (fname, code, src, ast, in_ast) = f()
