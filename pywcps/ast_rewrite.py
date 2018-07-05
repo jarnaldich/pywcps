@@ -1,4 +1,9 @@
 # -*- coding: utf-8 -*-
+"""
+Module that rewrites the AST from the "surface" DSL into another DSL where
+binding blocks (`For[var=...](...)`) are translated into functions.
+
+"""
 import ast
 import astunparse
 import inspect
