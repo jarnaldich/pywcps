@@ -2,7 +2,7 @@
 import ast
 import astunparse
 import inspect
-from .dsl import *
+from dsl import *
 from collections import namedtuple
 
 SrcTransform = namedtuple('SrcTransform', ['fname', 'code_obj', 'code_src', 'ast', 'in_ast'])
