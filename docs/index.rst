@@ -32,3 +32,7 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
+
+- http://tutorial.rasdaman.org/rasdaman-and-ogc-ws-tutorial/#rasql-querying-the-data
+- 08-068r2_Web_Coverage_Processing_Service_WCPS_Language_Interface_Standard.pdf
+
