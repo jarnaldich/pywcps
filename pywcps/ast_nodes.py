@@ -139,6 +139,15 @@ class CastExpr(Expr):
     def emit(self):
         return "(%s) %s" % (self.totype, self.child.emit())
 
+class ClipExpr(Expr):
+    """ (type) expr"""
+    def __init__(self, child, wkt):
+        self.child = child
+        self.wkt = wkt
+
+    def emit(self):
+        return "clip(%s, %s)" % (self.child.emit(), self.wkt)
+
 class ApplyExpr(Expr):
     """ Function application. Eg. count(c[], expr)"""
     def __init__(self, f, child):

@@ -121,4 +121,6 @@ approach:
 - https://jupyter.eofrom.space/user/jarnaldich/notebooks/jupyter_notebooks/geopython_workshop_2017/Domain_examples.ipynb
 - http://earthserver.pml.ac.uk/how_to/ocean
 - https://github.com/cite-sa/xwcps/blob/master/xwcps-parser/src/main/antlr/WCPS.g4
-La clau està en l'ús del coverateExpr, que pot avaluar a diferents tipus de 
+
+
+

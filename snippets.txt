@@ -1,0 +1,81 @@
+image>> 
+for $c in (BeamIrradTest) 
+return encode((float) 
+	clip(    	        
+    	$c[E(424894:425150.0), N(4596544:4596800.0), ansi("2018-01-01T15:00:00.000Z")] +
+        $c[E(424894:425150.0), N(4596544:4596800.0), ansi("2018-01-15T15:00:00.000Z")],
+    POLYGON((424950.0 4596644.0 , 424894.0 4596800.0, 425150.0 4596544.0, 424894.0 4596544.0))), "png")
+---
+image>> 
+for c in (BeamIrradTest) 
+return encode((float) condense max 
+                      over t ansi ("2018-01-01T15:00:00.000Z" : "2018-01-15T15:00:00.000Z")
+                      using c[E(424894:425150.0), N(4596544:4596800.0), t], "png")
+    
+ for c in (BeamIrradTest) 
+return encode((float) condense max 
+                      over t ansi ("2018-01-01T15:00:00.000Z" : "2018-01-15T15:00:00.000Z"),
+                           x E (424894:425150.0),
+                           y N (4596544:4596800.0)
+                      using c[x, y, t], "csv")
+    
+--- 
+
+for c in (BeamIrradTest) 
+return encode(coverage add_cov
+              over $pxx x( imageCrsDomain(c[E( 424894 :  425150)], E) ),
+                   $pxy y( imageCrsDomain(c[N(4596544 : 4596800)], N) )
+              values add(c[E($pxx), N($pxy), ansi("2018-01-01T15:00:00.000Z" : "2018-01-15T15:00:00.000Z")]),
+              "png")
+---
+
+image>>
+for c in (BeamIrradTest) 
+return encode(coverage add_cov
+              over $pxx x( imageCrsDomain(c[E( 424894 :  425150)], E) ),
+                   $pxy y( imageCrsDomain(c[N(4596544 : 4596800)], N) )
+              values avg(c[E($pxx), N($pxy), ansi("2018-01-01T15:00:00.000Z" : "2018-01-15T15:00:00.000Z")]),
+              "png")
+---
+
+image>>
+for c in (BeamIrradTest) 
+return encode(coverage add_cov
+              over $pxx x( imageCrsDomain(c[E( 424894 :  425150)], E) ),
+                   $pxy y( imageCrsDomain(c[N(4596544 : 4596800)], N) )
+              values clip(
+                     	avg(c[E($pxx), N($pxy), ansi("2018-01-01T15:00:00.000Z" : "2018-01-15T15:00:00.000Z")]),
+		        POLYGON((424950.0 4596644.0 , 424894.0 4596800.0, 425150.0 4596544.0, 424894.0 4596544.0))),
+              "png")
+--- 
+
+for c in (BeamIrradTest)
+return encode(
+  add(
+  clip(
+  (
+   condense +
+   over $pt t( imageCrsDomain(c[ansi("2018-01-01T15:00:00.000Z" : "2018-01-15T15:00:00.000Z")], ansi) )
+   using c[ansi($pt)]
+  ),
+  POLYGON((424950.0 4596644.0 , 424894.0 4596800.0, 425150.0 4596544.0, 424894.0 4596544.0))
+  )
+  )
+  ,
+"csv")
+
+---
+
+Funciona:
+
+for c in (BeamIrradTest)
+return encode(
+  avg(
+  (
+   condense +
+   over $pt t( imageCrsDomain(c[ansi("2018-01-01T15:00:00.000Z" : "2018-01-15T15:00:00.000Z")], ansi) )
+   using clip(c[ansi($pt)],
+  			  POLYGON((424950.0 4596644.0 , 424894.0 4596800.0, 425150.0 4596544.0, 424894.0 4596544.0)))))
+  ,
+"csv")
+

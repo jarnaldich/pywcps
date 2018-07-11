@@ -16,6 +16,9 @@ def sin(child):    return ApplyExpr("sin",    child)
 def cosh(child):   return ApplyExpr("cosh",   child)
 def sinh(child):   return ApplyExpr("sinh",   child)
 
+def clip(child, wkt): 
+    return ClipExpr(child, wkt)
+
 def cast(totype, child):
     return CastExpr(totype, child)
 
