@@ -74,8 +74,21 @@ return encode(
   (
    condense +
    over $pt t( imageCrsDomain(c[ansi("2018-01-01T15:00:00.000Z" : "2018-01-15T15:00:00.000Z")], ansi) )
-   using clip(c[ansi($pt)],
+   using clip(c[ansi($pt), E( 424894 :  425150), N(4596544 : 4596800)],
   			  POLYGON((424950.0 4596644.0 , 424894.0 4596800.0, 425150.0 4596544.0, 424894.0 4596544.0)))))
   ,
 "csv")
 
+
+---
+image>>
+for c in (BeamIrradTest)
+return encode(
+
+   (condense +
+   over $pt t( imageCrsDomain(c[ansi("2018-01-01T15:00:00.000Z" : "2018-12-31T15:00:00.000Z")], ansi) )
+   using clip(c[ansi($pt), E( 424894 :  425150), N(4596544 : 4596800)],
+  			POLYGON((424950.0 4596644.0 , 424894.0 4596800.0, 425150.0 4596544.0, 424894.0 4596544.0)))) 
+  
+  ,
+"png")
