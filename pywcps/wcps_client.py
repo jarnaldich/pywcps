@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
 import requests
-from .ast_nodes import *
-from .dsl import *
+from ast_nodes import *
+from dsl import *
 
 def emit_fun(f, *args, **kwargs):
     (fname, code, src, ast, in_ast) = f()
@@ -26,7 +26,7 @@ class WCPSClient(object):
 
     def ipython_image(self, q, ipython_kw = {}, *args, **kwargs):
         from IPython.display import Image
-	ipython_kw['data'] = self._req(emit_fun(q, *args, **kwargs)).content
+        ipython_kw['data'] = self._req(emit_fun(q, *args, **kwargs)).content
         return Image(**ipython_kw)
 
 if __name__ == "__main__":

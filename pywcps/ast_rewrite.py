@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+
 Module that rewrites the AST from the "surface" DSL into another DSL where
 binding blocks (`For[var=...](...)`) are translated into functions.
 
 """
 import ast
+import astor
 import astunparse
 import inspect
 from dsl import *
@@ -14,6 +16,7 @@ SrcTransform = namedtuple('SrcTransform', ['fname', 'code_obj', 'code_src', 'ast
 
 def wcps(fun):
     src = "\n".join(inspect.getsourcelines(fun)[0][1:])
+
     fun_ast = ast.parse(src)
 
     prefix = 'For_'
@@ -76,8 +79,9 @@ class Rewrite(ast.NodeTransformer):
             else:
                 seq = [e.slice.value]
 
-            funcargs = [ ast.Name(id=a.arg, ctx=ast.Load())
-                         for a in e.value.keywords ]
+            funcargs = [ ast.Name(id=a.arg, ctx=ast.Load()) for a in e.value.keywords ]
+            funcargs = [ ast.arg(arg=a.arg, annotation=None, ctx=ast.Load()) for a in e.value.keywords ]
+            defaults = [ a.value for a in e.value.keywords ]
             if head == 'For':
                 funvals =  [ ast.Call(func=ast.Name(id='CoverageExpr',
                                                     ctx=ast.Load()),
@@ -87,7 +91,6 @@ class Rewrite(ast.NodeTransformer):
                                       kwargs=None)
                              for a in e.value.keywords ]
             else:
-                funvals = [ ast.Str(s='$'+a.arg) for a in e.value.keywords ]
                 funvals = [ ast.Call(func=ast.Name(id='IteratorExpr',
                                                    ctx=ast.Load()),
                                       args=[ast.Str(s=a.arg), a.value],
@@ -101,7 +104,7 @@ class Rewrite(ast.NodeTransformer):
             innerBody[-1] = ast.Return(value=innerBody[-1].value)
             self.scopes[-1].append(ast.FunctionDef(
                     name=funname,
-                    args=ast.arguments(args=funcargs, vararg=None, kwarg=None, defaults=[]),
+                    args=ast.arguments(args=funcargs, vararg=None, kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=defaults),
                     body = innerBody,
                     decorator_list=[]))
 

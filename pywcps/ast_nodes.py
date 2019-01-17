@@ -11,7 +11,7 @@ class TypeMismatch(Exception):
 #--------------------------------------------------------------------------------
 class Expr(object):
     """
-    TODO: Probably override arithm operators
+    TODO: Probably override arithmetic operators
     """
     def emit(self):
         return "emit(%s)" % (type(self).__name__)
@@ -34,6 +34,7 @@ class Expr(object):
     def __add__(self, other): return self._binop(other, '+')
     def __sub__(self, other): return self._binop(other, '-')
     def __div__(self, other): return self._binop(other, '/')
+    def __truediv__(self, other): return self._binop(other, '/')
     def __and__(self, other): return self._binop(other, 'and')
     def __or__(self, other) : return self._binop(other, 'or')
     def __xor__(self, other): return self._binop(other, 'xor')
@@ -71,7 +72,7 @@ class ForExpr(Expr):
         self.child = child
 
     def emit(self):
-        fors = ['%s in (%s)' % (k,v) for k,v in self.covs.iteritems()]
+        fors = ['%s in (%s)' % (k,v) for k,v in self.covs.items()]
         return "for " + ", ".join(fors) + " return " + self.child.emit()
 
 class NewExpr(Expr):
@@ -86,7 +87,7 @@ class NewExpr(Expr):
 
     def emit(self):
         fors = ['$%s %s' % (k, v.emit())
-                for k,v in self.covs.iteritems()]
+                for k,v in self.covs.items()]
         return ("coverage %s over " % (self.name)) + \
             ", ".join(fors) + " values ( " + self.child.emit() + " )"
 
@@ -243,7 +244,7 @@ class StructExpr(Expr):
                 return o.emit()
             else:
                 return o
-        pairs = [ "%s: %s"% (k, emit(v)) for k,v in self.assoc.iteritems() ]
+        pairs = [ "%s: %s"% (k, emit(v)) for k,v in self.assoc.items() ]
         return '{%s}' % ('; '.join(pairs))
 
 

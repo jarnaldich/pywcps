@@ -1,10 +1,17 @@
 # -*- coding: utf-8 -*-
 import ast
-import astor
+#import astor
 import inspect
 from collections import namedtuple
 from dsl import *
+import dsl
 from ast_rewrite import wcps
+
+# @wcps
+# def test_simple():
+#     def prova(x=1):
+#         return dsl.sin(0)
+#     return prova()
 
 @wcps
 def test_simple(): return For(c="C")[encode(c, "csv")]
@@ -95,6 +102,8 @@ def test_coverage_constructor():
                                 term(c, pt) #+ term(c, pt+1) + term(c, pt+2)
                             ]), "csv")]
 
+
+
 # def emit_fun(f):
 #     (fname, code, src, ast, in_ast) = f()
 #     exec (code) in globals(), locals()
@@ -107,10 +116,19 @@ def test_coverage_constructor():
 # (fname, code, src, ast, in_ast) = test2()
 # with open('debug.py', 'w') as f:
 #     print >>f, src
+
 from wcps_client import WCPSClient, emit_fun
 eo = WCPSClient('http://earthserver.pml.ac.uk/rasdaman/ows/wcps')
-print eo.get_str(test_cloro)
-print eo.get_str(test_cloro2)
-print eo.get_str(test_coverage_constructor)
-print emit_fun(test_coverage_constructor)
+#print(eo.get_str(test_simple)) 
+
+ls = dict(locals())
+for name, vals in ls.items():
+    if name.startswith('test_'):
+        print(emit_fun(vals))
+        print()
+
+#print(eo.get_str(test_cloro)) 
+#print(eo.get_str(test_cloro2))
+#print(eo.get_str(test_coverage_constructor))
+#print(emit_fun(test_coverage_constructor))
 #eo.save_to(test_coverage_constructor, 'test.png')
